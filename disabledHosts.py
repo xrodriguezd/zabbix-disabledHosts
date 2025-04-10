@@ -1,17 +1,42 @@
+#!/usr/bin/env python3
+import os
+import sys
+import json
 import requests
 import smtplib
-from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from dotenv import load_dotenv
 
-# Configuración de la API de Zabbix
-ZABBIX_API_URL = 'https://zabbix-url/api_jsonrpc.php'
-ZABBIX_API_TOKEN = 'api-key'
+# Cargar variables de entorno desde el archivo .env
+load_dotenv()
 
-# Configuración de la conexión SMTP
-SMTP_SERVER = 'smtp-server'
-SMTP_PORT = 25
-SMTP_USER = 'smtp-user'
-SMTP_PASSWORD = 'smtp-password'
+# Configuración de Zabbix
+ZABBIX_URL = os.getenv('ZABBIX_URL')
+ZABBIX_API_TOKEN = os.getenv('ZABBIX_API_TOKEN')
+
+# Configuración del servidor SMTP
+SMTP_SERVER = os.getenv('SMTP_SERVER')
+SMTP_PORT = int(os.getenv('SMTP_PORT', 587))
+SMTP_USER = os.getenv('SMTP_USER')
+SMTP_PASSWORD = os.getenv('SMTP_PASSWORD')
+
+# Configuración del correo
+EMAIL_FROM = os.getenv('EMAIL_FROM')
+EMAIL_TO = os.getenv('EMAIL_TO')
+
+# Verificar que todas las variables de entorno estén configuradas
+required_vars = [
+    'ZABBIX_URL', 'ZABBIX_API_TOKEN',
+    'SMTP_SERVER', 'SMTP_USER', 'SMTP_PASSWORD',
+    'EMAIL_FROM', 'EMAIL_TO'
+]
+
+missing_vars = [var for var in required_vars if not os.getenv(var)]
+if missing_vars:
+    print(f"Error: Las siguientes variables de entorno no están configuradas: {', '.join(missing_vars)}")
+    print("Por favor, configura el archivo .env con todas las variables necesarias.")
+    sys.exit(1)
 
 def get_disabled_hosts(ZABBIX_API_TOKEN):
     headers = {'Content-Type': 'application/json'}
@@ -29,7 +54,7 @@ def get_disabled_hosts(ZABBIX_API_TOKEN):
         "auth": ZABBIX_API_TOKEN
     }
     
-    response = requests.post(ZABBIX_API_URL, json=data, headers=headers, verify='plantech.pem')
+    response = requests.post(ZABBIX_URL, json=data, headers=headers)
     hosts = response.json().get("result", [])
     
     # Filtrar hosts que no tienen el tag "disabled"
