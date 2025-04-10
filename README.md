@@ -85,8 +85,7 @@ El archivo `.env` debe contener las siguientes variables:
 
 ```
 ZABBIX_URL=https://tu-zabbix-server
-ZABBIX_USER=tu-usuario
-ZABBIX_PASSWORD=tu-contraseña
+ZABBIX_API_TOKEN=token-de-usuario
 SMTP_SERVER=tu-servidor-smtp
 SMTP_PORT=587
 SMTP_USER=tu-usuario-smtp
